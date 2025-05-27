@@ -22,7 +22,18 @@ permanent_url = 'https://javdb.com'
 if Cfg().network.proxy_server is not None:
     base_url = permanent_url
 else:
-    base_url = str(Cfg().network.proxy_free[CrawlerID.javdb])
+    # 尝试使用官方域名，如果配置的免代理地址失效
+    try:
+        base_url = str(Cfg().network.proxy_free[CrawlerID.javdb])
+        # 简单测试域名是否可用
+        import requests
+        test_resp = requests.get(base_url, timeout=5)
+        if 'javdb' not in test_resp.text.lower():
+            logger.warning(f"配置的免代理地址可能已失效: {base_url}")
+            base_url = permanent_url
+    except:
+        logger.warning("免代理地址测试失败，使用官方域名")
+        base_url = permanent_url
 
 
 def get_html_wrapper(url):
