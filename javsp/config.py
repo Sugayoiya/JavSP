@@ -148,8 +148,11 @@ class ExtraFanartSummarize(BaseConfig):
 class SlimefaceEngine(BaseConfig):
     name: Literal['slimeface']
 
+class OpenCVEngine(BaseConfig):
+    name: Literal['opencv']
+
 class CoverCrop(BaseConfig):
-  engine: SlimefaceEngine | None
+  engine: SlimefaceEngine | OpenCVEngine | None
   on_id_pattern: list[str]
 
 class CoverSummarize(BaseConfig):

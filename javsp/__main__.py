@@ -411,6 +411,7 @@ def process_poster(movie: Movie):
        should_use_ai_crop_match(movie.info.label.upper())):
         crop_engine = Cfg().summarizer.cover.crop.engine
     cropper = get_cropper(crop_engine)
+    print(f"crop_engine: {crop_engine}")
     fanart_image = Image.open(movie.fanart_file)
     fanart_cropped = cropper.crop(fanart_image)
 

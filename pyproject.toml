@@ -28,7 +28,8 @@ lxml = {extras = ["html-clean"], version = "^5.2.1"}
 confz = "^2.0.1"
 pydantic-extra-types = "^2.9.0"
 pendulum = "^3.0.0"
-slimeface = "^2024.9.27"
+# slimeface = "^2024.9.27"  # 暂时注释掉，构建有问题
+opencv-python = "^4.11.0.86"
 
 [tool.poetry.scripts]
 javsp = "javsp.__main__:entry"
