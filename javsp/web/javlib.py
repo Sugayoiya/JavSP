@@ -95,24 +95,64 @@ def parse_data(movie: MovieInfo):
             raise MovieDuplicateError(__name__, movie.dvdid, match_count, pre_choose_urls)
         # 重新抓取网页
         html = request.get_html(new_url)
-    container = html.xpath("/html/body/div/div[@id='rightcolumn']")[0]
+    # 添加错误处理，防止网页结构变化导致的索引错误
+    container_list = html.xpath("/html/body/div/div[@id='rightcolumn']")
+    if not container_list:
+        raise SiteBlocked(__name__, f"无法找到页面主要内容区域，可能网站结构已变化或被反爬机制阻止")
+    container = container_list[0]
+    
     title_tag = container.xpath("div/h3/a/text()")
+    if not title_tag:
+        raise MovieNotFoundError(__name__, movie.dvdid, "无法找到影片标题")
     title = title_tag[0]
-    cover = container.xpath("//img[@id='video_jacket_img']/@src")[0]
-    info = container.xpath("//div[@id='video_info']")[0]
-    dvdid = info.xpath("div[@id='video_id']//td[@class='text']/text()")[0]
-    publish_date = info.xpath("div[@id='video_date']//td[@class='text']/text()")[0]
-    duration = info.xpath("div[@id='video_length']//span[@class='text']/text()")[0]
+    
+    cover_list = container.xpath("//img[@id='video_jacket_img']/@src")
+    if not cover_list:
+        raise MovieNotFoundError(__name__, movie.dvdid, "无法找到影片封面")
+    cover = cover_list[0]
+    
+    info_list = container.xpath("//div[@id='video_info']")
+    if not info_list:
+        raise MovieNotFoundError(__name__, movie.dvdid, "无法找到影片信息区域")
+    info = info_list[0]
+    
+    dvdid_list = info.xpath("div[@id='video_id']//td[@class='text']/text()")
+    if not dvdid_list:
+        raise MovieNotFoundError(__name__, movie.dvdid, "无法找到影片番号")
+    dvdid = dvdid_list[0]
+    
+    publish_date_list = info.xpath("div[@id='video_date']//td[@class='text']/text()")
+    if not publish_date_list:
+        logger.warning(f"无法找到影片发布日期: {movie.dvdid}")
+        publish_date = ""
+    else:
+        publish_date = publish_date_list[0]
+    
+    duration_list = info.xpath("div[@id='video_length']//span[@class='text']/text()")
+    if not duration_list:
+        logger.warning(f"无法找到影片时长: {movie.dvdid}")
+        duration = ""
+    else:
+        duration = duration_list[0]
     director_tag = info.xpath("//span[@class='director']/a/text()")
     if director_tag:
         movie.director = director_tag[0]
-    producer = info.xpath("//span[@class='maker']/a/text()")[0]
+    
+    producer_list = info.xpath("//span[@class='maker']/a/text()")
+    if not producer_list:
+        logger.warning(f"无法找到制作商信息: {movie.dvdid}")
+        producer = ""
+    else:
+        producer = producer_list[0]
+    
     publisher_tag = info.xpath("//span[@class='label']/a/text()")
     if publisher_tag:
         movie.publisher = publisher_tag[0]
+    
     score_tag = info.xpath("//span[@class='score']/text()")
     if score_tag:
         movie.score = score_tag[0].strip('()')
+    
     genre = info.xpath("//span[@class='genre']/a/text()")
     actress = info.xpath("//span[@class='star']/a/text()")
 
@@ -122,9 +162,12 @@ def parse_data(movie: MovieInfo):
     if cover.startswith('//'):  # 补全URL中缺少的协议段
         cover = 'https:' + cover
     movie.cover = cover
-    movie.publish_date = publish_date
-    movie.duration = duration
-    movie.producer = producer
+    if publish_date:
+        movie.publish_date = publish_date
+    if duration:
+        movie.duration = duration
+    if producer:
+        movie.producer = producer
     movie.genre = genre
     movie.actress = actress
 

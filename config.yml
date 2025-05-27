@@ -31,7 +31,7 @@ network:
     avsox: 'https://avsox.click'
     javbus: 'https://www.seedmm.help'
     javdb: 'https://javdb368.com'
-    javlib: 'https://www.y78k.com'
+    javlib: 'https://www.r86m.com'
   # 网络问题导致抓取数据失败时的重试次数，通常3次就差不多了
   retry: 3
   # https://en.wikipedia.org/wiki/ISO_8601#Durations
